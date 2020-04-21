@@ -27,8 +27,9 @@ namespace Microsoft.Azure.WebJobs
                 {
                     throw new ArgumentNullException("context");
                 }
-                
-                context.Config.RegisterBindingExtensions(new GroupQueueTriggerAttributeBindingProvider(context.Config.StorageConnectionString));                
+
+                context.Config.RegisterBindingExtensions(new GroupQueueTriggerAttributeBindingProvider(
+                    context.Config.StorageConnectionString, context.Config.NameResolver));
             }
         }
     }

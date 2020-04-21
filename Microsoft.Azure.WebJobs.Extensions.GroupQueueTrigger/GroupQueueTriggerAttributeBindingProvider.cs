@@ -13,6 +13,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.WebJobs.Host;
 
 
 namespace Microsoft.Azure.WebJobs.Extensions.GroupQueueTrigger
@@ -23,13 +24,17 @@ namespace Microsoft.Azure.WebJobs.Extensions.GroupQueueTrigger
     internal class GroupQueueTriggerAttributeBindingProvider :  ITriggerBindingProvider
     {
         private readonly string _storageConnectionString;
+        private readonly INameResolver _nameResolver;
+
         /// <summary>
         /// [GroupQueueTrigger] constructor
         /// </summary>
         /// <param name="storageConnectionString">Azure Storage Account connection string</param>
-        public GroupQueueTriggerAttributeBindingProvider(string storageConnectionString)
+        /// <param name="nameResolver">The configured <see cref="INameResolver"/>, if any</param>
+        public GroupQueueTriggerAttributeBindingProvider(string storageConnectionString, INameResolver nameResolver)
         {
             _storageConnectionString = storageConnectionString;
+            _nameResolver = nameResolver;
         }
         public Task<ITriggerBinding> TryCreateAsync(TriggerBindingProviderContext context)
         {
@@ -67,8 +72,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.GroupQueueTrigger
         /// </summary>
         /// <param name="queueName"></param>
         /// <returns></returns>
-        private static string NormalizeAndValidate(string queueName)
+        private string NormalizeAndValidate(string queueName)
         {
+            if (_nameResolver != null)
+            {
+                queueName = _nameResolver.ResolveWholeString(queueName);
+            }
+
             return queueName.ToLowerInvariant();
         }
 
